@@ -18,6 +18,8 @@ class DA_Mongo_Access:
         if self.sensorId and start_dt:
             self.filter_for_data()
 
+        self.client.close()
+
     def start_mongo_client(self):
         self.client = MongoClient('mongodb://pd1-olaf:QYVjJcuwTbAkM3hCEqdWj49w@10.16.0.10:30027,10.16.0.11:30028,10.16.0.9:30029/persistence-service?tls=false&replicaSet=rs0&authMechanism=DEFAULT&authSource=persistence-service')
         logging.info("Connected to Client")
@@ -37,8 +39,7 @@ class DA_Mongo_Access:
     def write_data_to_csv(self):
         _ = 0
         with open(self.file_save_location, "w", newline="") as csvfile:
-            csv_writer = csv.DictWriter(csvfile, fieldnames=self.filtered_data[0].keys())
-            csv_writer.writeheader()
+            csv_writer = csv.writer(csvfile)
             for document in self.filtered_data:
                 csv_writer.writerow(document)
                 _ += 1
@@ -47,13 +48,12 @@ class DA_Mongo_Access:
         
 
     @atexit.register
-    def exit_handler(self):
-        self.client.close()
+    def exit_handler():
         logging.info("Closed the client")
 
 
 if __name__ == "__main__":
     DA_Mongo_Access(sensorId='0000000616-1623-brz-nz', 
-                    start_dt=datetime(2023, 8, 25, 13, 0, 0, tzinfo=timezone.utc), 
-                    end_dt=datetime(2023, 8, 25, 14, 0, 0, tzinfo=timezone.utc),
+                    start_dt=datetime(2023, 8, 25, 13, 0, 0), 
+                    end_dt=datetime(2023, 8, 25, 14, 0, 0),
                     file_save_location='data/test.csv')
